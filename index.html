@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<head>
+  <title>Line (using curveCardinal)</title>
+</head>
+
+<style>
+path {
+	fill: none;
+	stroke: #999;
+}
+circle {
+	fill: none;
+	stroke: #aaa;
+}
+</style>
+
+<body>
+<!-- <svg id="tomas" width="1500" height="210">
+</svg>
+<svg id="alice" width="1500" height="210">
+</svg>
+<svg id="smart" width="1500" height="210">
+</svg> -->
+<svg id="anderson" width="1500" height="2000">
+</svg>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.2.2/d3.min.js"></script>
+<script>
+
+var parseDate = d3.timeParse("%Y-%m-%d");
+
+d3.csv("test.csv", function(error,data){
+
+// data.forEach(function(d) {
+// 	console.log(d.from_date);
+// 	d.from_date = parseDate(d.from_date)
+// 	console.log(d.from_date);
+// 	d.to_date = parseDate(d.to_date)
+// });
+
+data.sort(function(x, y){
+   	return d3.ascending(x.from_date, y.from_date);
+	})
+
+var birDea = d3.nest()
+	.key(function(d) { return d.personID; })
+	.key(function(d){ return d.from_date;})
+	.entries(data);
+
+birDea.forEach(function(d) {
+	d.values["0"].key = parseDate(d.values["0"].key);	
+});
+
+var x = d3.scaleTime()
+	.domain([d3.min(birDea,function(d){
+			return d.values["0"].key;}), d3.max(birDea, function(){return parseDate('1950-01-01');})])
+	.range([0, 1200])
+	.nice();
+
+
+// birDea.forEach(function(d){
+// 	console.log(d.values["0"].key);	
+// })
+
+var ander = d3.select("#anderson");
+
+var counter = 0
+var currentYear = 0
+function hovnival(d){
+	if (currentYear == 0){
+		counter = 10;
+		currentYear = d;
+	}
+	else if (d == currentYear){
+		counter += 10;
+		currentYear = d;
+	}
+	else {
+		counter = 10;
+		currentYear = d;
+	}
+}
+
+ander.append("g")
+	.attr("class", "axisColor")	
+	.call(d3.axisBottom(x)
+	.tickFormat(d3.timeFormat("%Y-%m-%d")));
+
+ander.selectAll(".derson")
+	.data(birDea)
+	.enter()
+	.append("text")
+	.attr("x", function(d){ return x(d.values["0"].key)})
+	.attr("y", function(d){if ((d.values["0"].key) == null){
+								return 0;}
+							else {var yearCheck = d.values["0"].key.getYear();
+								 hovnival(yearCheck);
+							 	 return counter; }})
+	// .attr("transform",function(d,i){ 
+    // return "translate(" + x(d.values["0"].key) + ", " + counter + ")" + " rotate(50)"})
+	.text(function(d){
+		return d.key
+	})
+	.attr("font-size", "5px")
+	
+});
+
+// var andWord = "anderson"
+
+// for (var i = 10; i<100; i+=10) {
+// 	console.log(i);
+	
+// d3.select("#anderson")
+// .append("text")
+// .attr("x", i)
+// .attr("y", i)
+// // .attr("transform", "translate(i,i) rotate(80)")
+// .text(andWord)
+// }
+
+
+// var lineGenerator = d3.line()
+// 	.curve(d3.curveCardinal);
+
+// var points = [
+// 	[0, 80],
+// 	[200, 100],
+// 	[300, 40],
+// 	[400, 50],
+// 	[500, 40],
+// 	[550, 40],
+// 	[650, 40],
+// 	[700, 0]
+// ];
+
+// var pathData = lineGenerator(points);
+
+// d3.selectAll('path')
+// 	.attr('d', pathData);
+
+// Also draw points for reference
+// d3.select('svg')
+// 	.selectAll('circle')
+// 	.data(points)
+// 	.enter()
+// 	.append('circle')
+// 	.attr('cx', function(d) {
+// 		return d[0];
+// 	})
+// 	.attr('cy', function(d) {
+// 		return d[1];
+// 	})
+// 	.attr('r', 3);
+  </script>
+</body>
+</html>
